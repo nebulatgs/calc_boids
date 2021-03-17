@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+*.8xv
+*.8xp
+*.bin
+*.src
+*.old
+*.js

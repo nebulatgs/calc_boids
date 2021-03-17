@@ -1,0 +1,22 @@
+palettes:
+  - name: bwpalette
+    max-entries: 3
+    fixed-entries:
+      - color: {index: 0, r: 0, g: 0, b: 0}
+      #- color: {index: 1, r: 33, g: 33, b: 33}
+      - color: {index: 255, r: 255, g: 255, b: 255}
+    images: 
+      - particle.png
+    speed: 1
+converts:
+  - name: particle
+    palette: bwpalette
+    images:
+    - particle.png
+outputs:
+  - type: c
+    include-file: gfx.h
+    palettes:
+      - bwpalette
+    converts:
+      - particle
