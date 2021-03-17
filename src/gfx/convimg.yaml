@@ -13,6 +13,10 @@ converts:
     palette: bwpalette
     images:
     - particle.png
+  - name: mouse
+    palette: bwpalette
+    images:
+    - mouse.png
 outputs:
   - type: c
     include-file: gfx.h
@@ -20,3 +24,4 @@ outputs:
       - bwpalette
     converts:
       - particle
+      - mouse

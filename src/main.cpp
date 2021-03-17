@@ -25,8 +25,9 @@ uint16_t seperate = 1;
 uint16_t cohere = 1;
 uint16_t cursorForce = 1;
 bool bounce = 0;
-gfx_rletsprite_t* particle_rlet;
-
+gfx_rletsprite_t *particle_rlet, *mouse_rlet;
+v2d mouseVec;
+v2d mouseVel;
 uint16_t hues [16] = {224,225,226,227,228,228,230,231,199,167,135,103,71,79,87,95};
 
 
@@ -122,21 +123,27 @@ struct Boid {
         if (pos.x > width) pos.x = 0;
         if (pos.y < 0) pos.y = height;
         if (pos.y > height) pos.y = 0;
+
+        if (mouseVec.x < 0) mouseVec.x = width;
+        if (mouseVec.x > width) mouseVec.x = 0;
+        if (mouseVec.y < 0) mouseVec.y = height;
+        if (mouseVec.y > height) mouseVec.y = 0;
     }
 
     void draw(){
         v2d lineEnd((pos + vel * 5));
         gfx_Line(pos.x, pos.y, lineEnd.x, lineEnd.y);
         gfx_RLETSprite(particle_rlet, pos.x - particle_width/2, pos.y - particle_width/2);
+        gfx_RLETSprite(mouse_rlet, mouseVec.x - mouse_width/2, mouseVec.y - mouse_width/2);
     }
 
     void cursor(bool explode){
-        v2d cursorVec = v2d(width/2, height/2);
-        float d = cursorVec.sqrDist(pos);
-        cursorVec -= pos;
-        cursorVec.setLen(10000/d || 1);
-        cursorVec.limit(cursorForce);
-        if(explode) acc += cursorVec; else acc -= cursorVec;
+        float d = mouseVec.sqrDist(pos);
+        mouseVel = v2d(mouseVec);
+        mouseVel -= pos;
+        mouseVel.setLen(10000/d || 1);
+        mouseVel.limit(cursorForce);
+        if(explode) acc += mouseVel; else acc -= mouseVel;
     }
 
 };
@@ -155,6 +162,9 @@ int main(void)
 // Initialize particle sprite
     gfx_SetTransparentColor(0);
     particle_rlet = gfx_ConvertMallocRLETSprite(particle);
+    mouse_rlet = gfx_ConvertMallocRLETSprite(mouse);
+    //mouseVec.randomize();
+    mouseVec = v2d(width/2, height/2);
 // Seed RNG with current time
     srand((unsigned int)rtc_Time());
     Vector<Boid*> flock;
@@ -173,13 +183,29 @@ int main(void)
     float frame = 0;
     gfx_palette[74] = gfx_RGBTo1555(31, 30, 27);
     gfx_palette[75] = gfx_RGBTo1555(67, 66, 64);
-    kb_key_t key;
-    while (kb_Data[1] != kb_2nd) {
+    kb_key_t arrowKey;
+    kb_key_t triggerKey;
+    while (kb_Data[6] != kb_Clear) {
     // Calculate forces on all boids
         for (uint16_t i = 1; i < boidCount-1 ; i++) {
-            key = kb_Data[7];
+            arrowKey = kb_Data[7];
+            triggerKey = kb_Data[2];
             flock[i]->flock(flock);
-            if (key == kb_Up) flock[i]->cursor(1); else if (key == kb_Down) flock[i]->cursor(0);
+            if (triggerKey == kb_Alpha) flock[i]->cursor(1); else if (triggerKey == kb_Math) flock[i]->cursor(0);
+            switch(arrowKey) {
+                case kb_Up:
+                    mouseVec.y--;
+                    break;
+                case kb_Down:
+                    mouseVec.y++;
+                    break;
+                case kb_Left:
+                    mouseVec.x--;
+                    break;
+                case kb_Right:
+                    mouseVec.x++;
+                    break;
+            }
             kb_Scan();
         }
     // Zero the graphics buffer
@@ -192,6 +218,7 @@ int main(void)
     }
 
     free(particle_rlet);
+    free(mouse_rlet);
     gfx_End();
     return 0;
 }
