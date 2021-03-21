@@ -9,21 +9,24 @@
 #include <graphx.h>
 #include <gfx/gfx.h>
 #include <keypadc.h>
+#include <fileioc.h>
 
-const uint16_t width = 320, height = 240;
-uint16_t vis = 70;
-uint16_t sqVis = vis*vis;
+const int factor = 4096;
+const int width = 320 * factor, height = 240 * factor;
 
-uint16_t maxSpeed = 8;
+int vis = 70 * factor;
+int sqVis = vis*vis;
+
+int maxSpeed = 8 * factor;
 //float maxForce = 0.2;
 float maxForce = 0.4f;
 
-uint16_t boidCount = 12;
+int boidCount = 12;
 
-uint16_t align = 1;
-uint16_t seperate = 1;
-uint16_t cohere = 1;
-uint16_t cursorForce = 1;
+int align = 1 * factor;
+int seperate = 1 * factor;
+int cohere = 1 * factor;
+int cursorForce = 1 * factor;
 bool bounce = 0;
 gfx_rletsprite_t *particle_rlet, *mouse_rlet;
 v2d mouseVec;
@@ -52,7 +55,7 @@ struct Boid {
     v2d csn;
     v2d sep;
     Vector <uint16_t> neighbors;
-    Vector <float> dists;
+    Vector <int> dists;
 
 // Calculate forces based on neighbors
     void flock(Vector <Boid*>& boids) {
@@ -71,7 +74,7 @@ struct Boid {
         // Skip ourself
             if (target == this) continue;
         // Distance to boid
-            float d;
+            int d;
         // Skip recalculation of distance if possible
             if (index > target->index) {
                 int j = target->neighbors.Find(index);
@@ -133,12 +136,12 @@ struct Boid {
     void draw(){
         v2d lineEnd((pos + vel * 5));
         gfx_Line(pos.x, pos.y, lineEnd.x, lineEnd.y);
-        gfx_RLETSprite(particle_rlet, pos.x - particle_width/2, pos.y - particle_width/2);
-        gfx_RLETSprite(mouse_rlet, mouseVec.x - mouse_width/2, mouseVec.y - mouse_width/2);
+        gfx_RLETSprite(particle_rlet, pos.x/factor - particle_width/2, pos.y/factor - particle_width/2);
+        gfx_RLETSprite(mouse_rlet, mouseVec.x/factor - mouse_width/2, mouseVec.y/factor - mouse_width/2);
     }
 
     void cursor(bool explode){
-        float d = mouseVec.sqrDist(pos);
+        int d = mouseVec.sqrDist(pos);
         mouseVel = v2d(mouseVec);
         mouseVel -= pos;
         mouseVel.setLen(10000/d || 1);
@@ -157,8 +160,17 @@ void drawAll(Vector<Boid*>& flock){
     }
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    real_t * os_boidCount;
+    real_t * os_vision;
+    ti_RclVar(TI_REAL_TYPE, ti_O, (void**)&os_boidCount);
+    ti_RclVar(TI_REAL_TYPE, ti_V, (void**)&os_vision);
+    boidCount = (uint16_t)os_RealToInt24(os_boidCount) > 0 ? (uint16_t)os_RealToInt24(os_boidCount) : 10;
+    sqVis = (int)os_RealToInt24(os_vision) > 0 ? (int)os_RealToInt24(os_vision) : 30;
+    sqVis *= factor;
+    sqVis *= sqVis;
+    //boidCount = argc > 0 ? *argv[0] : 12;
 // Initialize particle sprite
     gfx_SetTransparentColor(0);
     particle_rlet = gfx_ConvertMallocRLETSprite(particle);
@@ -185,25 +197,27 @@ int main(void)
     gfx_palette[75] = gfx_RGBTo1555(67, 66, 64);
     kb_key_t arrowKey;
     kb_key_t triggerKey;
+    kb_key_t turboKey;
     while (kb_Data[6] != kb_Clear) {
     // Calculate forces on all boids
         for (uint16_t i = 1; i < boidCount-1 ; i++) {
             arrowKey = kb_Data[7];
             triggerKey = kb_Data[2];
-            flock[i]->flock(flock);
+            turboKey = kb_Data[3];
+            if (turboKey != kb_0) flock[i]->flock(flock);
             if (triggerKey == kb_Alpha) flock[i]->cursor(1); else if (triggerKey == kb_Math) flock[i]->cursor(0);
             switch(arrowKey) {
                 case kb_Up:
-                    mouseVec.y--;
+                    mouseVec.y-=factor;
                     break;
                 case kb_Down:
-                    mouseVec.y++;
+                    mouseVec.y+=factor;
                     break;
                 case kb_Left:
-                    mouseVec.x--;
+                    mouseVec.x-=factor;
                     break;
                 case kb_Right:
-                    mouseVec.x++;
+                    mouseVec.x+=factor;
                     break;
             }
             kb_Scan();

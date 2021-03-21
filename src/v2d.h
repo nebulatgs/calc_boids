@@ -12,55 +12,55 @@ struct v2d {
     //Create an empty vector
     v2d() { x = 0.0f; y = 0.0f; }
     //Create a vector from _x and _y
-    v2d(const float _x, const float _y) : x(_x), y(_y) {}
+    v2d(const int _x, const int _y) : x(_x), y(_y) {}
     //Create a new vector from frm
 // v2d(const v2d& frm) : x(frm.x), y(frm.y) {}
     //Set vector to _x and _y
-    v2d set(float _x, float _y) { x = _x; y = _y; return(*this); }
+    v2d set(int _x, int _y) { x = _x; y = _y; return(*this); }
     //Randomize this vector
-    v2d randomize(float scale = 1) { float r = randMapped() * 2 * 3.141592f; set(cos(r) * scale, sin(r) * scale); return(*this); }
+    v2d randomize(int scale = 1) { int r = randMapped() * 2 * 3.141592f; set(cos(r) * scale, sin(r) * scale); return(*this); }
     //Set vector to zero
     void zero() { x = 0.0f; y = 0.0f; }
 
     v2d operator + (const v2d& r) { return v2d(this->x + r.x, this->y + r.y); }
-    v2d operator + (const float r) { return v2d(this->x + r, this->y + r); }
+    v2d operator + (const int r) { return v2d(this->x + r, this->y + r); }
     v2d operator += (const v2d& r) { this->x += r.x; this->y += r.y; return(*this); }
 
     v2d operator - (const v2d& r) { return v2d(this->x - r.x, this->y - r.y); }
-    v2d operator - (const float r) { return v2d(this->x - r, this->y - r); }
+    v2d operator - (const int r) { return v2d(this->x - r, this->y - r); }
     v2d operator -= (const v2d& r) { this->x -= r.x; this->y -= r.y; return(*this); }
 
 
     v2d operator * (const v2d& r) { return v2d(this->x * r.x, this->y * r.y); }
-    v2d operator * (const float r) { return v2d(this->x * r, this->y * r); }
+    v2d operator * (const int r) { return v2d(this->x * r, this->y * r); }
     v2d operator *= (const v2d& r) { this->x *= r.x; this->y *= r.y; return(*this); }
-    v2d operator *= (const float r) { this->x *= r; this->y *= r; return(*this); }
+    v2d operator *= (const int r) { this->x *= r; this->y *= r; return(*this); }
 
     v2d operator / (const v2d& r) { return v2d(this->x / r.x, this->y / r.y); }
-    v2d operator / (const float r) { return v2d(this->x / r, this->y / r); }
+    v2d operator / (const int r) { return v2d(this->x / r, this->y / r); }
     v2d operator /= (const v2d& r) { this->x /= r.x; this->y /= r.y; return(*this); }
-    v2d operator /= (const float r) { this->x /= r; this->y /= r; return(*this); }
+    v2d operator /= (const int r) { this->x /= r; this->y /= r; return(*this); }
 
     v2d norm() { *this = *this * invLen(); return(*this); }
-    v2d setLen(float mag) { 
+    v2d setLen(int mag) { 
         // this->operator/=(len());
         this->operator*=(invLen() * mag);
         //*this = this / len() * mag;
         return(*this); 
     }
-    float len() { 
+    int len() { 
         return sqrtf((x*x) + (y*y));
 
         //return(hypotf(x, y)); 
     }
 
-    float invLen() {
+    int invLen() {
         return inv_sqrt(sqrLen());
     }
-    float sqrLen() { return(x * x + y * y); }
-    float sqrDist(const v2d& b) { v2d a = *this - b; return(a.x * a.x + a.y * a.y); }
+    int sqrLen() { return(x * x + y * y); }
+    int sqrDist(const v2d& b) { v2d a = *this - b; return(a.x * a.x + a.y * a.y); }
 
-    v2d limit(float b)
+    v2d limit(int b)
     {
         if (sqrLen() <= b * b) {
             return(*this);
@@ -69,6 +69,6 @@ struct v2d {
         return(*this);
     }
 
-    float x;
-    float y;
+    int x;
+    int y;
 };
